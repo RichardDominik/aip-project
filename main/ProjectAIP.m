@@ -78,7 +78,9 @@ function fill_axises(from,hObject, eventdata, handles)
     array = ["@axes1_ButtonDownFcn";"@axes2_ButtonDownFcn";"@axes3_ButtonDownFcn";
             "@axes4_ButtonDownFcn";"@axes5_ButtonDownFcn"];
     for i = from:from+4
-       img = im2double(imread(i+".bmp"));
+       suffix = '.bmp';
+       path = [num2str(i), suffix];
+       img = im2double(imread(path));
        disp(i);
        axHandle = (handles.(['axes',num2str(mod(i-1,5)+1)]));
        set(axHandle, 'UserData', img);
