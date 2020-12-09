@@ -153,6 +153,8 @@ function algo1_Callback(hObject, eventdata, handles)
      %SECOND try 
      imageFromMainAxes = getimage(handles.mainAxes);
      detector = vision.ForegroundDetector();
+     blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+     se = strel('square', 3);
       
      for i = 1:35
        suffix = '.bmp';
@@ -160,9 +162,13 @@ function algo1_Callback(hObject, eventdata, handles)
        img = im2double(imread(['pictures/',path]));
        foreground = step(detector, img);
      end
-     
-     maskedImage = bsxfun(@times, imageFromMainAxes, cast(foreground, 'like',imageFromMainAxes));
-     imshow(maskedImage, 'Parent', handles.mainAxes);
-     
-  
-     
+    
+     foreground = step(detector, imageFromMainAxes);
+     filteredForeground = imerode(foreground, se);
+     bbox = step(blobAnalysis, filteredForeground);
+     result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
+     imshow(result, 'Parent', handles.mainAxes);
+     numberOfCars = size(bbox, 1);
+     disp(numberOfCars);
+     set(handles.algo1Count,'string', num2str(numberOfCars));
+    
