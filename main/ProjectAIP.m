@@ -116,3 +116,92 @@ function selectAxes5_Callback(hObject, eventdata, handles)
     else
        warndlg('Incorect Input, Please Select An Image!','Warning');
     end
+
+
+% --- Executes on button press in algo1.
+function algo1_Callback(hObject, eventdata, handles)
+% hObject    handle to algo1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+     imageFromMainAxes = getimage(handles.mainAxes);
+     imageFromMainAxesFiltered = imgaussfilt(imageFromMainAxes,4);
+     detector = vision.ForegroundDetector();
+     blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+     se = strel('square', 5);
+      
+     for i = 1:35
+       suffix = '.bmp';
+       path = [num2str(i), suffix];
+       img = im2double(imread(['pictures/',path]));
+       img = imgaussfilt(img,4);
+       foreground = step(detector, img);
+     end
+    
+     foreground = step(detector, imageFromMainAxesFiltered);
+     filteredForeground = imdilate(foreground, se);
+     bbox = step(blobAnalysis, filteredForeground);
+     result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
+     imshow(result, 'Parent', handles.mainAxes);
+     numberOfCars = size(bbox, 1);
+     disp(numberOfCars);
+     set(handles.algo1Count,'string', num2str(numberOfCars));
+
+     
+% --- Executes on button press in algo2.
+function algo2_Callback(hObject, eventdata, handles)
+    Background = im2double(imread('pictures/background.bmp'));
+    imageFromMainAxes = im2double(getimage(handles.mainAxes));
+    object = abs(imageFromMainAxes - Background);
+    I = object;
+    I(I > 0.27) = 1;
+    I(I <= 0.27) = 0;
+    bw = bwareaopen(I, 65);
+   % figure;
+   % imshow(bw);
+   
+ %  conc = strel('rectangle', [5, 7]);
+ %  gi = imdilate(bw, conc);
+ %  conc1 = strel('rectangle',[7,5]);
+ %  ge=imerode(gi,conc1);
+ %  gdiff = imsubtract(gi,ge);
+%   figure;
+ %  imshow(gdiff);
+ %  gdiff2 = conv2(gdiff,[1 1; 1 1]);
+ %  figure;
+ %  imshow(gdiff2);
+ %  gdiff3 = imadjust(gdiff2,[0.4 0.9], [0 1], 1);
+ %  figure;
+ %  imshow(gdiff3);
+
+   % SES = strel('rectangle', [5, 3]);
+   % test = imopen(bw, SES);
+   % SES2 = strel('rectangle', [3, 5]);
+   % test2 = imopen(test, SES2);
+   % figure;
+   % imshow(test2);
+    
+    SE2 = strel('rectangle', [8, 3]);
+    dil2 = imdilate(bw, SE2);
+    SE = strel('rectangle', [3, 8]);
+    dil = imdilate(dil2, SE);
+    
+  %  figure;
+  %  imshow(dil);
+    
+    SE1 = strel('rectangle', [5, 3]);
+    SE2 = strel('rectangle', [3, 5]);
+    clo = imclose(dil, SE1);
+    clo3 = imclose(clo, SE2);
+  %  figure;
+  %  imshow(clo3);
+    
+    str = strel('square', 6);
+    clo2 = imerode(clo3, str);
+  %  figure;
+  %  imshow(clo2);
+
+    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+    bbox = step(blobAnalysis, clo2);
+    result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
+    imshow(result, 'Parent', handles.mainAxes);
+    

@@ -1,28 +1,4 @@
 function varargout = ProjectAIP(varargin)
-% PROJECTAIP MATLAB code for ProjectAIP.fig
-%      PROJECTAIP, by itself, creates a new PROJECTAIP or raises the existing
-%      singleton*.
-%
-%      H = PROJECTAIP returns the handle to a new PROJECTAIP or the handle to
-%      the existing singleton*.
-%
-%      PROJECTAIP('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in PROJECTAIP.M with the given input arguments.
-%
-%      PROJECTAIP('Property','Value',...) creates a new PROJECTAIP or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ProjectAIP_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ProjectAIP_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
-
-% Edit the above text to modify the response to help ProjectAIP
-
-% Last Modified by GUIDE v2.5 26-Nov-2020 22:22:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,12 +22,6 @@ end
 
 % --- Executes just before ProjectAIP is made visible.
 function ProjectAIP_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ProjectAIP (see VARARGIN)
-
 % Choose default command line output for ProjectAIP
 handles.output = hObject;
 
@@ -63,37 +33,27 @@ guidata(hObject, handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ProjectAIP_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
 varargout{1} = handles.output;
-% after start of program
-fill_axises(1,handles);
-hold off;
 
-function fill_axises(from, handles)
-    for i = from:from+4
-       img = im2double(imread(i+".bmp"));
-       handle = (handles.(['axes',num2str(mod(i-1,5)+1)]));
-       set(handle, 'UserData', img);
-       ax = imshow(img, 'Parent', handle);
-       set(ax, 'ButtonDownFcn', @axesImage_ButtonDownFcn);
+% after start of program
+pause(0.1);
+fill_axises(1,hObject, eventdata,handles);
+
+function fill_axises(from,hObject, eventdata, handles)
+   for i = from:from+4
+       suffix = '.bmp';
+       path = [num2str(i), suffix];
+       img = im2double(imread(['pictures/',path]));
+       axHandle = (handles.(['axes',num2str(mod(i-1,5)+1)]));
+       set(axHandle, 'UserData', img);
+       imshow(img, 'Parent', axHandle);
     end
 
 % --- Executes on slider movement.
 function imageSlider_Callback(hObject, eventdata, handles)
-% hObject    handle to imageSlider (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 sliderValue = get(handles.imageSlider, 'Value');
 round = floor(sliderValue);
-fill_axises(round, handles);
+fill_axises(round, hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function imageSlider_CreateFcn(hObject, eventdata, handles)
@@ -106,21 +66,168 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
+% --- Executes on button press in selectAxes1.
+function selectAxes1_Callback(hObject, eventdata, handles)
+    if ~isempty(handles.axes1)
+        imh = findobj(handles.axes1, 'type', 'image');
+        img = get(imh, 'CData');
+        imshow(img, 'Parent', handles.mainAxes);
+    else
+       warndlg('Incorect Input, Please Select An Image!','Warning');
+    end
 
-% --- Executes on mouse press over axes background.
-function axes1_ButtonDownFcn(hObject, eventdata, handles)
-disp('axes1  was clicked');
-set(handles.axes1, 'ButtonDownFcn', 'disp(''axis callback'')');
-cla(handles.axes1);
-set(handles.axes1, 'HitTest', 'off');
 
-% hObject    handle to axes1 (see GCBO)
+% --- Executes on button press in selectAxes2.
+function selectAxes2_Callback(hObject, eventdata, handles)
+    if ~isempty(handles.axes2)
+        imh = findobj(handles.axes2, 'type', 'image');
+        img = get(imh, 'CData');
+        imshow(img, 'Parent', handles.mainAxes);
+    else
+       warndlg('Incorect Input, Please Select An Image!','Warning');
+    end
+
+% --- Executes on button press in selectAxes3.
+function selectAxes3_Callback(hObject, eventdata, handles)
+    if ~isempty(handles.axes3)
+        imh = findobj(handles.axes3, 'type', 'image');
+        img = get(imh, 'CData');
+        imshow(img, 'Parent', handles.mainAxes);
+    else
+       warndlg('Incorect Input, Please Select An Image!','Warning');
+    end
+
+% --- Executes on button press in selectAxes4.
+function selectAxes4_Callback(hObject, eventdata, handles)
+    if ~isempty(handles.axes4)
+        imh = findobj(handles.axes4, 'type', 'image');
+        img = get(imh, 'CData');
+        imshow(img, 'Parent', handles.mainAxes);
+    else
+       warndlg('Incorect Input, Please Select An Image!','Warning');
+    end
+
+% --- Executes on button press in selectAxes5.
+function selectAxes5_Callback(hObject, eventdata, handles)
+    if ~isempty(handles.axes5)
+        imh = findobj(handles.axes5, 'type', 'image');
+        img = get(imh, 'CData');
+        imshow(img, 'Parent', handles.mainAxes);
+    else
+       warndlg('Incorect Input, Please Select An Image!','Warning');
+    end
+
+
+% --- Executes on button press in algo1.
+function algo1_Callback(hObject, eventdata, handles)
+% hObject    handle to algo1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-function axesImage_ButtonDownFcn(hObject, eventdata, handles)
-disp(handles);
+     % FIRST try from https://www.mathworks.com/matlabcentral/answers/338296-cars-detection-in-image
+     
+     %imageFromMainAxes = getimage(handles.mainAxes);
+     %result = medfilt2(imageFromMainAxes, [5 5]);
+     %SE = strel('disk', 5);
+     %imDilated = imdilate(result, SE);
+     %imErodet = imerode(result, SE);
+     %imDiff = imsubtract(imDilated, imErodet);
+     %imDiff1 = mat2gray(imDiff);
+     %imDiff2 = conv2(imDiff1, [1 1; 1 1]);
+     %imDiff3 = imadjust(imDiff2, [0.4 0.9], [0 1], 1);
+     %B = logical(imDiff3);
+     %[a1 b1] = size(B);
+     %er = imerode(B, strel('line', 60, 8));
+     %out1 = imsubtract(B, er);
+     %F = imfill(out1, 'holes');
+     %H = bwmorph(F, 'thin', 0.5);
+     %H = imerode(H, strel('line', 60, 8));
+     
+     %I = bwareaopen(H, floor((a1/18)*(b1/18)));
+     %I(1:floor(.9*a1), 1:2) = 1;
+     %I(a1:-1:(a1-20), b1:1:(b1-2)) = 1;
+     %Iprops = regionprops(I, 'BoundingBox', 'Image');
+     %set(handles.algo1Count,'string', num2str(length(Iprops)));
+     %imshow(imageFromMainAxes, 'Parent', handles.mainAxes);
+     
+     %SECOND try 
+     imageFromMainAxes = getimage(handles.mainAxes);
+     detector = vision.ForegroundDetector();
+     blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+     se = strel('square', 3);
+      
+     for i = 1:35
+       suffix = '.bmp';
+       path = [num2str(i), suffix];
+       img = im2double(imread(['pictures/',path]));
+       foreground = step(detector, img);
+     end
+    
+     foreground = step(detector, imageFromMainAxes);
+     filteredForeground = imerode(foreground, se);
+     bbox = step(blobAnalysis, filteredForeground);
+     result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
+     figure;
+     imshow(foreground);
+     imshow(result, 'Parent', handles.mainAxes);
+     numberOfCars = size(bbox, 1);
+     disp(numberOfCars);
+     set(handles.algo1Count,'string', num2str(numberOfCars));
+  
+     
+function algo2_Callback(hObject, eventdata, handles)
+    Background = im2double(imread('pictures/background.bmp'));
+    imageFromMainAxes = im2double(getimage(handles.mainAxes));
+    object = abs(imageFromMainAxes - Background);
+    I = object;
+    I(I > 0.27) = 1;
+    I(I <= 0.27) = 0;
+    bw = bwareaopen(I, 65);
+   % figure;
+   % imshow(bw);
+   
+ %  conc = strel('rectangle', [5, 7]);
+ %  gi = imdilate(bw, conc);
+ %  conc1 = strel('rectangle',[7,5]);
+ %  ge=imerode(gi,conc1);
+ %  gdiff = imsubtract(gi,ge);
+%   figure;
+ %  imshow(gdiff);
+ %  gdiff2 = conv2(gdiff,[1 1; 1 1]);
+ %  figure;
+ %  imshow(gdiff2);
+ %  gdiff3 = imadjust(gdiff2,[0.4 0.9], [0 1], 1);
+ %  figure;
+ %  imshow(gdiff3);
 
+   % SES = strel('rectangle', [5, 3]);
+   % test = imopen(bw, SES);
+   % SES2 = strel('rectangle', [3, 5]);
+   % test2 = imopen(test, SES2);
+   % figure;
+   % imshow(test2);
+    
+    SE2 = strel('rectangle', [8, 3]);
+    dil2 = imdilate(bw, SE2);
+    SE = strel('rectangle', [3, 8]);
+    dil = imdilate(dil2, SE);
+    
+  %  figure;
+  %  imshow(dil);
+    
+    SE1 = strel('rectangle', [5, 3]);
+    SE2 = strel('rectangle', [3, 5]);
+    clo = imclose(dil, SE1);
+    clo3 = imclose(clo, SE2);
+  %  figure;
+  %  imshow(clo3);
+    
+    str = strel('square', 6);
+    clo2 = imerode(clo3, str);
+  %  figure;
+  %  imshow(clo2);
 
-% --- Executes during object creation, after setting all properties.
-function axes1_CreateFcn(hObject, eventdata, handles)
-% Hint: place code in OpeningFcn to populate axes1
+    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+    bbox = step(blobAnalysis, clo2);
+    result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
+    imshow(result, 'Parent', handles.mainAxes);
+    
