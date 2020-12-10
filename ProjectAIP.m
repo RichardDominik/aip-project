@@ -123,48 +123,22 @@ function algo1_Callback(hObject, eventdata, handles)
 % hObject    handle to algo1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-     % FIRST try from https://www.mathworks.com/matlabcentral/answers/338296-cars-detection-in-image
-     
-     %imageFromMainAxes = getimage(handles.mainAxes);
-     %result = medfilt2(imageFromMainAxes, [5 5]);
-     %SE = strel('disk', 5);
-     %imDilated = imdilate(result, SE);
-     %imErodet = imerode(result, SE);
-     %imDiff = imsubtract(imDilated, imErodet);
-     %imDiff1 = mat2gray(imDiff);
-     %imDiff2 = conv2(imDiff1, [1 1; 1 1]);
-     %imDiff3 = imadjust(imDiff2, [0.4 0.9], [0 1], 1);
-     %B = logical(imDiff3);
-     %[a1 b1] = size(B);
-     %er = imerode(B, strel('line', 60, 8));
-     %out1 = imsubtract(B, er);
-     %F = imfill(out1, 'holes');
-     %H = bwmorph(F, 'thin', 0.5);
-     %H = imerode(H, strel('line', 60, 8));
-     
-     %I = bwareaopen(H, floor((a1/18)*(b1/18)));
-     %I(1:floor(.9*a1), 1:2) = 1;
-     %I(a1:-1:(a1-20), b1:1:(b1-2)) = 1;
-     %Iprops = regionprops(I, 'BoundingBox', 'Image');
-     %set(handles.algo1Count,'string', num2str(length(Iprops)));
-     %imshow(imageFromMainAxes, 'Parent', handles.mainAxes);
-     
-     %SECOND try 
      imageFromMainAxes = getimage(handles.mainAxes);
+     imageFromMainAxesFiltered = imgaussfilt(imageFromMainAxes,4);
      detector = vision.ForegroundDetector();
      blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-     se = strel('square', 3);
+     se = strel('square', 5);
       
      for i = 1:35
        suffix = '.bmp';
        path = [num2str(i), suffix];
        img = im2double(imread(['pictures/',path]));
+       img = imgaussfilt(img,4);
        foreground = step(detector, img);
      end
     
-     foreground = step(detector, imageFromMainAxes);
-     filteredForeground = imerode(foreground, se);
+     foreground = step(detector, imageFromMainAxesFiltered);
+     filteredForeground = imdilate(foreground, se);
      bbox = step(blobAnalysis, filteredForeground);
      result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
      imshow(result, 'Parent', handles.mainAxes);
