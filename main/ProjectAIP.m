@@ -162,7 +162,7 @@ function algo1_Callback(hObject, eventdata, handles)
     sliderValue = get(handles.imageSlider, 'Value');
     round = floor(sliderValue);
     index = round + getIndex;
-    disp("Index: "+ index);
+    %disp("Index: "+ index);
     
     data = load(['./ground-truth/',num2str(index),'.mat']);
     groundTruthBbox = data.gTruth.LabelData.Car{1,1};
@@ -170,9 +170,9 @@ function algo1_Callback(hObject, eventdata, handles)
     result = calculateIoU(groundTruthBbox, bbox);
     disp(result);
     AP50 = calculateAP(result, 0.5);
-    disp("AP 50:" + num2str(AP50));
+    set(handles.ap50_algo1,'string', num2str(AP50));
     mAp = calculateMAP(result);
-    disp("mAp:" + num2str(mAp));
+    set(handles.map_algo1,'string', num2str(mAp));
 
 % --- Executes on button press in algo2.
 function algo2_Callback(hObject, eventdata, handles)
@@ -203,9 +203,9 @@ function algo2_Callback(hObject, eventdata, handles)
     result = calculateIoU(groundTruthBbox, bbox);
     disp(result);
     AP50 = calculateAP(result, 0.5);
-    disp("AP 50:" + num2str(AP50));
+    set(handles.ap50_algo2,'string', num2str(AP50));
     mAp = calculateMAP(result);
-    disp("mAp:" + num2str(mAp));
+    set(handles.map_algo2,'string', num2str(mAp));
 
  %  conc = strel('rectangle', [5, 7]);
  %  gi = imdilate(bw, conc);
