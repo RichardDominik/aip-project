@@ -39,6 +39,14 @@ varargout{1} = handles.output;
 pause(0.1);
 fill_axises(1,hObject, eventdata,handles);
 
+function id = getIndex
+global idx;
+id = idx;
+
+function setIndex(id)
+global idx;
+idx = id;
+
 function fill_axises(from,hObject, eventdata, handles)
    for i = from:from+4
        suffix = '.bmp';
@@ -69,6 +77,7 @@ end
 % --- Executes on button press in selectAxes1.
 function selectAxes1_Callback(hObject, eventdata, handles)
     if ~isempty(handles.axes1)
+        setIndex(0);
         imh = findobj(handles.axes1, 'type', 'image');
         img = get(imh, 'CData');
         imshow(img, 'Parent', handles.mainAxes);
@@ -80,6 +89,7 @@ function selectAxes1_Callback(hObject, eventdata, handles)
 % --- Executes on button press in selectAxes2.
 function selectAxes2_Callback(hObject, eventdata, handles)
     if ~isempty(handles.axes2)
+        setIndex(1);
         imh = findobj(handles.axes2, 'type', 'image');
         img = get(imh, 'CData');
         imshow(img, 'Parent', handles.mainAxes);
@@ -90,6 +100,7 @@ function selectAxes2_Callback(hObject, eventdata, handles)
 % --- Executes on button press in selectAxes3.
 function selectAxes3_Callback(hObject, eventdata, handles)
     if ~isempty(handles.axes3)
+        setIndex(2);
         imh = findobj(handles.axes3, 'type', 'image');
         img = get(imh, 'CData');
         imshow(img, 'Parent', handles.mainAxes);
@@ -100,6 +111,7 @@ function selectAxes3_Callback(hObject, eventdata, handles)
 % --- Executes on button press in selectAxes4.
 function selectAxes4_Callback(hObject, eventdata, handles)
     if ~isempty(handles.axes4)
+        setIndex(3);
         imh = findobj(handles.axes4, 'type', 'image');
         img = get(imh, 'CData');
         imshow(img, 'Parent', handles.mainAxes);
@@ -110,6 +122,7 @@ function selectAxes4_Callback(hObject, eventdata, handles)
 % --- Executes on button press in selectAxes5.
 function selectAxes5_Callback(hObject, eventdata, handles)
     if ~isempty(handles.axes5)
+        setIndex(4);
         imh = findobj(handles.axes5, 'type', 'image');
         img = get(imh, 'CData');
         imshow(img, 'Parent', handles.mainAxes);
@@ -123,42 +136,69 @@ function algo1_Callback(hObject, eventdata, handles)
 % hObject    handle to algo1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-     imageFromMainAxes = getimage(handles.mainAxes);
-     imageFromMainAxesFiltered = imgaussfilt(imageFromMainAxes,4);
-     detector = vision.ForegroundDetector();
-     blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-     se = strel('square', 5);
-      
-     for i = 1:35
-       suffix = '.bmp';
-       path = [num2str(i), suffix];
-       img = im2double(imread(['pictures/',path]));
-       img = imgaussfilt(img,4);
-       foreground = step(detector, img);
-     end
-    
-     foreground = step(detector, imageFromMainAxesFiltered);
-     filteredForeground = imdilate(foreground, se);
-     bbox = step(blobAnalysis, filteredForeground);
-     result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
-     imshow(result, 'Parent', handles.mainAxes);
-     numberOfCars = size(bbox, 1);
-     disp(numberOfCars);
-     set(handles.algo1Count,'string', num2str(numberOfCars));
+    imageFromMainAxes = getimage(handles.mainAxes);
+    imageFromMainAxesFiltered = imgaussfilt(imageFromMainAxes,4);
+    detector = vision.ForegroundDetector();
+    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+    se = strel('square', 5);
 
+    for i = 1:35
+    suffix = '.bmp';
+    path = [num2str(i), suffix];
+    img = im2double(imread(['pictures/',path]));
+    img = imgaussfilt(img,4);
+    foreground = step(detector, img);
+    end
+
+    foreground = step(detector, imageFromMainAxesFiltered);
+    filteredForeground = imdilate(foreground, se);
+    bbox = step(blobAnalysis, filteredForeground);
+    result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
+    imshow(result, 'Parent', handles.mainAxes);
+    numberOfCars = size(bbox, 1);
+    disp(numberOfCars);
+    set(handles.algo1Count,'string', num2str(numberOfCars));
      
+    sliderValue = get(handles.imageSlider, 'Value');
+    round = floor(sliderValue);
+    index = round + getIndex;
+    disp("Index: "+ index);
+    
+    data = load(['./ground-truth/',num2str(index),'.mat']);
+    groundTruthBbox = data.gTruth.LabelData.Car{1,1};
+    % disp(groundTruthBbox);
+    result = calculateIoU(groundTruthBbox, bbox);
+    disp(result);
+
 % --- Executes on button press in algo2.
 function algo2_Callback(hObject, eventdata, handles)
     Background = im2double(imread('pictures/background.bmp'));
     imageFromMainAxes = im2double(getimage(handles.mainAxes));
     object = abs(imageFromMainAxes - Background);
     I = object;
-    I(I > 0.27) = 1;
-    I(I <= 0.27) = 0;
-    bw = bwareaopen(I, 65);
-   % figure;
-   % imshow(bw);
-   
+    I(I > 0.22) = 1;
+    I(I <= 0.22) = 0;
+    bw = bwareaopen(I, 45);
+    
+    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+    bbox = step(blobAnalysis, bw);
+    result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
+    imshow(result, 'Parent', handles.mainAxes);
+    
+    numberOfCars = size(bbox, 1);
+    disp(numberOfCars);
+    set(handles.BSText0,'string', num2str(numberOfCars));
+    
+    sliderValue = get(handles.imageSlider, 'Value');
+    round = floor(sliderValue);
+    index = round + getIndex;
+    disp("Index: "+ index);
+    
+    data = load(['./ground-truth/',num2str(index),'.mat']);
+    groundTruthBbox = data.gTruth.LabelData.Car{1,1};
+    result = calculateIoU(groundTruthBbox, bbox);
+    disp(result);
+
  %  conc = strel('rectangle', [5, 7]);
  %  gi = imdilate(bw, conc);
  %  conc1 = strel('rectangle',[7,5]);
@@ -200,8 +240,20 @@ function algo2_Callback(hObject, eventdata, handles)
   %  figure;
   %  imshow(clo2);
 
-    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-    bbox = step(blobAnalysis, clo2);
-    result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
-    imshow(result, 'Parent', handles.mainAxes);
+    %blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
+    %bbox = step(blobAnalysis, clo2);
+    %result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
+    %imshow(result, 'Parent', handles.mainAxes);
     
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
+clearvars;
+clear all;
