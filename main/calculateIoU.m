@@ -1,8 +1,6 @@
 function [iou] = calculateIoU(groundBox,box)
 %CALCULATEIOU Summary of this function goes here
 %   Detailed explanation goes here
-    tp = 0;
-    fp = 0;
     iou = [];
     for i = 1:size(groundBox, 1)
         A = groundBox(i,:);
@@ -13,15 +11,7 @@ function [iou] = calculateIoU(groundBox,box)
             if result > maxim
                 maxim = result;
             end
-        end
-        if maxim >= 0.5
-            tp = tp + 1;
-        else 
-            fp = fp + 1;
-        end
-        
+        end 
         iou = [iou maxim];
-        %disp(maxim);
     end
-    disp("AP50: " + tp/(tp + fp));
 end
