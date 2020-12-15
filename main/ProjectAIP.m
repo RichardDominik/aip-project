@@ -39,6 +39,9 @@ varargout{1} = handles.output;
 pause(0.1);
 fill_axises(1,hObject, eventdata,handles);
 
+%script
+script(hObject, eventdata, handles);
+
 function id = getIndex
 global idx;
 id = idx;
@@ -47,15 +50,42 @@ function setIndex(id)
 global idx;
 idx = id;
 
+function mAp = getMaP
+global map;
+mAp = map;
+
+function setMaP(mAp)
+global map;
+map = mAp;
+
+function ap = getAP50
+global ap50;
+ap = ap50;
+
+function setAP50(ap)
+global ap50;
+ap50 = ap;
+
+function idx = getId
+global id;
+idx = id;
+
+function setId(idx)
+global id;
+id = idx;
+
 function fill_axises(from,hObject, eventdata, handles)
-   for i = from:from+4
+   to = from+4;
+   idx = 1;
+   for i = from:to
        suffix = '.bmp';
        path = [num2str(i), suffix];
        img = im2double(imread(['pictures/',path]));
-       axHandle = (handles.(['axes',num2str(mod(i-1,5)+1)]));
+       axHandle = (handles.(['axes',num2str(idx)]));
        set(axHandle, 'UserData', img);
        imshow(img, 'Parent', axHandle);
-    end
+       idx = idx + 1; 
+   end
 
 % --- Executes on slider movement.
 function imageSlider_Callback(hObject, eventdata, handles)
@@ -163,7 +193,10 @@ function algo1_Callback(hObject, eventdata, handles)
     round = floor(sliderValue);
     index = round + getIndex;
     %disp("Index: "+ index);
-    
+    if ~isempty(getId)        
+        index = getId;
+        disp("Algo1-scriptIdx: " + index);
+    end
     data = load(['./ground-truth/',num2str(index),'.mat']);
     groundTruthBbox = data.gTruth.LabelData.Car{1,1};
     % disp(groundTruthBbox);
@@ -173,7 +206,11 @@ function algo1_Callback(hObject, eventdata, handles)
     set(handles.ap50_algo1,'string', num2str(AP50));
     mAp = calculateMAP(result);
     set(handles.map_algo1,'string', num2str(mAp));
-
+    if ~isempty(getId) 
+        setMaP(mAp);
+        setAP50(AP50);
+    end
+    
 % --- Executes on button press in algo2.
 function algo2_Callback(hObject, eventdata, handles)
     Background = im2double(imread('pictures/background.bmp'));
@@ -190,23 +227,29 @@ function algo2_Callback(hObject, eventdata, handles)
     imshow(result, 'Parent', handles.mainAxes);
     
     numberOfCars = size(bbox, 1);
-    disp(numberOfCars);
+    %disp(numberOfCars);
     set(handles.BSText0,'string', num2str(numberOfCars));
     
     sliderValue = get(handles.imageSlider, 'Value');
     round = floor(sliderValue);
     index = round + getIndex;
-    %disp("Index: "+ index);
-    
+    if ~isempty(getId)        
+        index = getId;
+        disp("Algo2-scriptIdx: " + index);
+    end
     data = load(['./ground-truth/',num2str(index),'.mat']);
     groundTruthBbox = data.gTruth.LabelData.Car{1,1};
     result = calculateIoU(groundTruthBbox, bbox);
-    disp(result);
+    %disp(result);
     AP50 = calculateAP(result, 0.5);
     set(handles.ap50_algo2,'string', num2str(AP50));
     mAp = calculateMAP(result);
     set(handles.map_algo2,'string', num2str(mAp));
 
+    if ~isempty(getId) 
+        setMaP(mAp);
+        setAP50(AP50);
+    end
  %  conc = strel('rectangle', [5, 7]);
  %  gi = imdilate(bw, conc);
  %  conc1 = strel('rectangle',[7,5]);
@@ -253,8 +296,31 @@ function algo2_Callback(hObject, eventdata, handles)
     %result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
     %imshow(result, 'Parent', handles.mainAxes);
     
-
-
+function script(hObject, eventdata, handles)
+    from = 1;
+    to = 35;
+    mAp = [];
+    ap50 = [];
+    for i =from:to
+        suffix = '.bmp';
+        path = [num2str(i), suffix];
+        img = im2double(imread(['pictures/',path]));
+        imshow(img, 'Parent', handles.mainAxes);
+        setId(i);
+        algo1_Callback(hObject, eventdata, handles);
+        %disp("mAp: " + getMaP);
+        %disp("ap50: " + getAP50);
+        mAp = [mAp getMaP];
+        ap50 = [ap50 getAP50];
+    end
+    disp('mAp: ');
+    fprintf('%0f,\n', mAp);
+    disp('ap50: ');
+    fprintf('%0f,\n', ap50);
+    
+    % destroy global variable
+    clearvars;
+    
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
