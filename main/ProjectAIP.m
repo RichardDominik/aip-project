@@ -39,9 +39,6 @@ varargout{1} = handles.output;
 pause(0.1);
 fill_axises(1,hObject, eventdata,handles);
 
-%script
-script(hObject, eventdata, handles);
-
 function id = getIndex
 global idx;
 id = idx;
@@ -173,11 +170,11 @@ function algo1_Callback(hObject, eventdata, handles)
     se = strel('square', 5);
 
     for i = 1:35
-    suffix = '.bmp';
-    path = [num2str(i), suffix];
-    img = im2double(imread(['pictures/',path]));
-    img = imgaussfilt(img,4);
-    foreground = step(detector, img);
+        suffix = '.bmp';
+        path = [num2str(i), suffix];
+        img = im2double(imread(['pictures/',path]));
+        img = imgaussfilt(img,4);
+        foreground = step(detector, img);
     end
 
     foreground = step(detector, imageFromMainAxesFiltered);
@@ -186,22 +183,17 @@ function algo1_Callback(hObject, eventdata, handles)
     result = insertShape(imageFromMainAxes, 'Rectangle', bbox);
     imshow(result, 'Parent', handles.mainAxes);
     numberOfCars = size(bbox, 1);
-    disp(numberOfCars);
     set(handles.algo1Count,'string', num2str(numberOfCars));
      
     sliderValue = get(handles.imageSlider, 'Value');
     round = floor(sliderValue);
     index = round + getIndex;
-    %disp("Index: "+ index);
     if ~isempty(getId)        
         index = getId;
-        disp("Algo1-scriptIdx: " + index);
     end
     data = load(['./ground-truth/',num2str(index),'.mat']);
     groundTruthBbox = data.gTruth.LabelData.Car{1,1};
-    % disp(groundTruthBbox);
     result = calculateIoU(groundTruthBbox, bbox);
-    disp(result);
     AP50 = calculateAP(result, 0.5);
     set(handles.ap50_algo1,'string', num2str(AP50));
     mAp = calculateMAP(result);
@@ -227,7 +219,6 @@ function algo2_Callback(hObject, eventdata, handles)
     imshow(result, 'Parent', handles.mainAxes);
     
     numberOfCars = size(bbox, 1);
-    %disp(numberOfCars);
     set(handles.BSText0,'string', num2str(numberOfCars));
     
     sliderValue = get(handles.imageSlider, 'Value');
@@ -235,12 +226,10 @@ function algo2_Callback(hObject, eventdata, handles)
     index = round + getIndex;
     if ~isempty(getId)        
         index = getId;
-        disp("Algo2-scriptIdx: " + index);
     end
     data = load(['./ground-truth/',num2str(index),'.mat']);
     groundTruthBbox = data.gTruth.LabelData.Car{1,1};
     result = calculateIoU(groundTruthBbox, bbox);
-    %disp(result);
     AP50 = calculateAP(result, 0.5);
     set(handles.ap50_algo2,'string', num2str(AP50));
     mAp = calculateMAP(result);
@@ -297,30 +286,69 @@ function algo2_Callback(hObject, eventdata, handles)
     %imshow(result, 'Parent', handles.mainAxes);
     
 function script(hObject, eventdata, handles)
+    global algo;
     from = 1;
     to = 35;
     mAp = [];
     ap50 = [];
+    indices = [];
     for i =from:to
         suffix = '.bmp';
         path = [num2str(i), suffix];
         img = im2double(imread(['pictures/',path]));
-        imshow(img, 'Parent', handles.mainAxes);
+        imshow(img, 'Parent', handles.mainAxes);   
         setId(i);
-        algo1_Callback(hObject, eventdata, handles);
-        %disp("mAp: " + getMaP);
-        %disp("ap50: " + getAP50);
+        if algo == 0
+            algo2_Callback(hObject, eventdata, handles);
+        else
+            algo1_Callback(hObject, eventdata, handles);
+        end
         mAp = [mAp getMaP];
         ap50 = [ap50 getAP50];
+        indices = [indices i];
     end
-    disp('mAp: ');
-    fprintf('%0f,\n', mAp);
-    disp('ap50: ');
-    fprintf('%0f,\n', ap50);
+    
+    figure;
+    plot(indices, mAp);
+    res1 = (sum(mAp) / 35);
+    disp("mAp-sum" + res1)
+    xticks(1:35);
+    xlabel("Image number");
+    ylabel("mAP");
+    if algo == 0
+        title("mAP Background Substraction");
+    else
+        title("mAP Foreground Detector");
+    end
+    
+    figure;
+    plot(indices, ap50);
+    res2 = (sum(ap50) / 35);
+    disp("ap50-sum" + res2)
+    xticks(1:35);
+    xlabel("Image number");
+    ylabel("AP50");
+    if algo == 0
+        title("AP50 Background Substraction");
+    else
+        title("AP50 Foreground Detector");
+    end
     
     % destroy global variable
     clearvars;
     
+% --- Executes on button press in resultAlgo1.
+function resultAlgo1_Callback(hObject, eventdata, handles)
+global algo;
+algo = 1;
+script(hObject, eventdata, handles);
+
+% --- Executes on button press in resultAlgo2.
+function resultAlgo2_Callback(hObject, eventdata, handles)
+global algo;
+algo = 0;
+script(hObject, eventdata, handles);
+
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
