@@ -92,10 +92,6 @@ fill_axises(round, hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function imageSlider_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to imageSlider (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
@@ -160,14 +156,11 @@ function selectAxes5_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in algo1.
 function algo1_Callback(hObject, eventdata, handles)
-% hObject    handle to algo1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
     imageFromMainAxes = getimage(handles.mainAxes);
     imageFromMainAxesFiltered = imgaussfilt(imageFromMainAxes,4);
     detector = vision.ForegroundDetector();
-    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-    se = strel('square', 5);
+    blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 200);
+    se = strel('square', 6);
 
     for i = 1:35
         suffix = '.bmp';
@@ -208,19 +201,18 @@ function algo2_Callback(hObject, eventdata, handles)
     Background = im2double(imread('pictures/background.bmp'));
     imageFromMainAxes = im2double(getimage(handles.mainAxes));
     object = abs(imageFromMainAxes - Background);
-    I = object;
+    I = object;  
     I(I > 0.22) = 1;
     I(I <= 0.22) = 0;
     bw = bwareaopen(I, 45);
-    
+    se = strel('square', 7);
+    gi = imclose(bw, se);
     blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-    bbox = step(blobAnalysis, bw);
+    bbox = step(blobAnalysis, gi);
     result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
     imshow(result, 'Parent', handles.mainAxes);
-    
     numberOfCars = size(bbox, 1);
     set(handles.BSText0,'string', num2str(numberOfCars));
-    
     sliderValue = get(handles.imageSlider, 'Value');
     round = floor(sliderValue);
     index = round + getIndex;
@@ -239,51 +231,6 @@ function algo2_Callback(hObject, eventdata, handles)
         setMaP(mAp);
         setAP50(AP50);
     end
- %  conc = strel('rectangle', [5, 7]);
- %  gi = imdilate(bw, conc);
- %  conc1 = strel('rectangle',[7,5]);
- %  ge=imerode(gi,conc1);
- %  gdiff = imsubtract(gi,ge);
-%   figure;
- %  imshow(gdiff);
- %  gdiff2 = conv2(gdiff,[1 1; 1 1]);
- %  figure;
- %  imshow(gdiff2);
- %  gdiff3 = imadjust(gdiff2,[0.4 0.9], [0 1], 1);
- %  figure;
- %  imshow(gdiff3);
-
-   % SES = strel('rectangle', [5, 3]);
-   % test = imopen(bw, SES);
-   % SES2 = strel('rectangle', [3, 5]);
-   % test2 = imopen(test, SES2);
-   % figure;
-   % imshow(test2);
-    
-    SE2 = strel('rectangle', [8, 3]);
-    dil2 = imdilate(bw, SE2);
-    SE = strel('rectangle', [3, 8]);
-    dil = imdilate(dil2, SE);
-    
-  %  figure;
-  %  imshow(dil);
-    
-    SE1 = strel('rectangle', [5, 3]);
-    SE2 = strel('rectangle', [3, 5]);
-    clo = imclose(dil, SE1);
-    clo3 = imclose(clo, SE2);
-  %  figure;
-  %  imshow(clo3);
-    
-    str = strel('square', 6);
-    clo2 = imerode(clo3, str);
-  %  figure;
-  %  imshow(clo2);
-
-    %blobAnalysis = vision.BlobAnalysis('BoundingBoxOutputPort', true, 'CentroidOutputPort', false, 'AreaOutputPort', false, 'MinimumBlobArea', 300);
-    %bbox = step(blobAnalysis, clo2);
-    %result = insertShape(imageFromMainAxes, 'Rectangle', bbox); 
-    %imshow(result, 'Parent', handles.mainAxes);
     
 function script(hObject, eventdata, handles)
     global algo;
@@ -351,10 +298,6 @@ script(hObject, eventdata, handles);
 
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
 % Hint: delete(hObject) closes the figure
 delete(hObject);
 clearvars;
