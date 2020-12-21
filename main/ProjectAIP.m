@@ -263,7 +263,7 @@ function script(hObject, eventdata, handles)
     xlabel("Image number");
     ylabel("mAP");
     if algo == 0
-        title("mAP Background Substraction");
+        title("mAP Background Subtraction");
     else
         title("mAP Foreground Detector");
     end
@@ -276,7 +276,7 @@ function script(hObject, eventdata, handles)
     xlabel("Image number");
     ylabel("AP50");
     if algo == 0
-        title("AP50 Background Substraction");
+        title("AP50 Background Subtraction");
     else
         title("AP50 Foreground Detector");
     end
